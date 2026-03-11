@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#020810">
+<title>J.A.R.V.I.S</title>
+<link rel="manifest" id="manifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="J.A.R.V.I.S">
+<script>
+// Inline manifest
+const manifest = {
+  name: "J.A.R.V.I.S",
+  short_name: "JARVIS",
+  description: "Just A Rather Very Intelligent System",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#020810",
+  theme_color: "#020810",
+  orientation: "portrait",
+  icons: [{
+    src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%23020810'/><text x='50%25' y='54%25' font-size='280' text-anchor='middle' dominant-baseline='middle' fill='%2300d4ff'>J</text></svg>",
+    sizes: "512x512", type: "image/svg+xml"
+  }]
+};
+const blob = new Blob([JSON.stringify(manifest)], {type:'application/json'});
+document.getElementById('manifest').href = URL.createObjectURL(blob);
+
+// Service Worker for offline caching
+if('serviceWorker' in navigator){
+  const swCode = `
+    const CACHE = 'jarvis-v1';
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(['/'])));
+      self.skipWaiting();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+    });
+  `;
+  const swBlob = new Blob([swCode], {type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{--c:#00d4ff;--g:#ffd700;--r:#ff4444;--gr:#00ff88;--d:#020810;--p:rgba(0,15,40,0.93);--b:rgba(0,212,255,0.22)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--d);color:var(--c);font-family:'Share Tech Mono',monospace;min-height:100vh;min-height:100dvh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:40px 40px;animation:gs 20s linear infinite;pointer-events:none;z-index:0}
+@keyframes gs{to{background-position:0 40px}}
+.glw{position:fixed;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(0,70,180,0.08),transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;animation:br 5s ease-in-out infinite}
+@keyframes br{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}}
+.scr{display:none;position:relative;z-index:1}
+.scr.on{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+
+/* SETUP */
+#setup{align-items:center;justify-content:center;padding:32px 18px}
+.sw{width:100%;max-width:420px}
+.logo{text-align:center;margin-bottom:32px}
+.logo h1{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(30px,10vw,52px);letter-spacing:10px;color:var(--c);text-shadow:0 0 25px var(--c),0 0 60px rgba(0,212,255,0.35);animation:fl 6s infinite}
+@keyframes fl{0%,93%,100%{opacity:1}94%{opacity:.6}96%{opacity:.9}}
+.logo p{font-size:9px;letter-spacing:5px;color:rgba(0,212,255,0.38);margin-top:6px}
+.card{background:var(--p);border:1px solid var(--b);border-radius:10px;padding:22px 18px;margin-bottom:16px;position:relative;overflow:hidden}
+.card::after{content:'';position:absolute;top:0;left:-200%;width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--c),transparent);animation:sw 3.5s linear infinite}
+@keyframes sw{to{left:200%}}
+.ct{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:var(--g);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.ct .dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 8px var(--g)}
+.fl2 label{display:block;font-size:10px;letter-spacing:2px;color:rgba(0,212,255,0.5);margin-bottom:6px}
+.fl2 input{width:100%;background:rgba(0,212,255,0.04);border:1px solid var(--b);border-radius:5px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:13px;padding:11px 13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.fl2 input:focus{border-color:var(--c);box-shadow:0 0 14px rgba(0,212,255,0.15)}
+.fl2 input::placeholder{color:rgba(0,212,255,0.18)}
+.hint{font-size:10px;color:rgba(0,212,255,0.35);margin-top:6px;line-height:1.6}
+.hint a{color:rgba(0,212,255,0.55);text-decoration:none}
+.btn{width:100%;padding:15px;background:linear-gradient(135deg,rgba(0,100,255,0.22),rgba(0,212,255,0.1));border:1px solid var(--c);border-radius:7px;color:var(--c);font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:4px;cursor:pointer;transition:all .2s;display:block;text-align:center;margin-bottom:10px}
+.btn:active{background:linear-gradient(135deg,rgba(0,100,255,0.38),rgba(0,212,255,0.2));box-shadow:0 0 22px rgba(0,212,255,0.3)}
+.btn.sm{font-size:10px;padding:11px;opacity:.55;letter-spacing:2px}
+.install-tip{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:14px;margin-top:16px;font-size:11px;line-height:1.8;color:rgba(0,255,136,0.6)}
+.install-tip strong{color:var(--gr);display:block;margin-bottom:4px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px}
+
+/* MAIN */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b);background:rgba(2,8,16,0.97);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.tbtitle{font-family:'Orbitron',monospace;font-size:15px;font-weight:900;letter-spacing:6px;text-shadow:0 0 18px var(--c)}
+.ibtn{background:transparent;border:1px solid var(--b);border-radius:5px;color:rgba(0,212,255,0.6);font-size:15px;padding:6px 10px;cursor:pointer}
+.ibtn:active{border-color:var(--c);color:var(--c)}
+
+/* Spotify */
+.spbar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--b);background:rgba(0,30,10,0.4);cursor:pointer;text-decoration:none}
+.spbar:active{background:rgba(0,255,136,0.07)}
+.spico{width:38px;height:38px;border-radius:50%;background:#1DB954;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.spinfo{flex:1}
+.spname{font-size:12px;color:var(--gr)}
+.spsub{font-size:10px;color:rgba(0,255,136,0.4);margin-top:2px}
+
+/* Quick strip */
+.qs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px;scrollbar-width:none;border-bottom:1px solid var(--b)}
+.qs::-webkit-scrollbar{display:none}
+.qb{flex-shrink:0;background:var(--p);border:1px solid var(--b);border-radius:20px;color:rgba(0,212,255,0.7);font-family:'Share Tech Mono',monospace;font-size:10px;padding:7px 14px;cursor:pointer;white-space:nowrap}
+.qb:active{border-color:var(--c);color:var(--c);background:rgba(0,212,255,0.08)}
+
+/* Chat */
+.chat-area{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:12px;padding-bottom:180px}
+.chat-area::-webkit-scrollbar{width:2px}
+.chat-area::-webkit-scrollbar-thumb{background:var(--b)}
+.msg{max-width:86%;animation:mi .22s ease}
+@keyframes mi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.msg.j{align-self:flex-start}
+.msg.u{align-self:flex-end}
+.mlb{font-size:9px;letter-spacing:2px;color:rgba(0,212,255,0.38);margin-bottom:4px}
+.msg.u .mlb{text-align:right}
+.bbl{padding:12px 14px;border-radius:7px;font-size:13px;line-height:1.65}
+.msg.j .bbl{background:var(--p);border:1px solid var(--b);border-left:2px solid var(--c)}
+.msg.u .bbl{background:rgba(0,100,255,0.12);border:1px solid rgba(0,100,255,0.25);color:#9ed4ff;text-align:right}
+.typ{display:flex;gap:5px;align-items:center;padding:4px 0}
+.typ span{width:7px;height:7px;border-radius:50%;background:var(--c);opacity:.3;animation:td 1.2s ease-in-out infinite}
+.typ span:nth-child(2){animation-delay:.2s}
+.typ span:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,80%,100%{opacity:.2;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+
+/* Bottom */
+.bbar{position:fixed;bottom:0;left:0;right:0;background:rgba(2,8,16,0.98);border-top:1px solid var(--b);padding:12px 16px 22px;z-index:100;backdrop-filter:blur(12px)}
+.irow{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px}
+#ti{flex:1;background:rgba(0,212,255,0.04);border:1px solid var(--b);border-radius:7px;color:var(--c);font-family:'Share Tech Mono',monospace;font-size:14px;padding:12px 14px;outline:none;resize:none;max-height:100px;transition:border-color .2s}
+#ti:focus{border-color:var(--c);box-shadow:0 0 12px rgba(0,212,255,0.13)}
+#ti::placeholder{color:rgba(0,212,255,0.2)}
+.sndbtn{background:linear-gradient(135deg,rgba(0,100,255,0.28),rgba(0,212,255,0.13));border:1px solid var(--c);border-radius:7px;color:var(--c);font-size:19px;width:46px;height:46px;cursor:pointer;flex-shrink:0}
+.sndbtn:active{box-shadow:0 0 20px rgba(0,212,255,0.35)}
+.microw{display:flex;justify-content:center}
+.micwrap{text-align:center}
+.micbtn{width:62px;height:62px;border-radius:50%;border:2px solid var(--c);background:radial-gradient(circle,rgba(0,212,255,0.1),rgba(0,212,255,0.02));color:var(--c);font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative}
+.micbtn::before{content:'';position:absolute;inset:-7px;border-radius:50%;border:1px solid rgba(0,212,255,0.1);animation:ring 2.5s ease-in-out infinite}
+@keyframes ring{0%,100%{transform:scale(1);opacity:.35}50%{transform:scale(1.08);opacity:.12}}
+.micbtn.on{border-color:var(--r);color:var(--r);animation:mp .65s ease-in-out infinite alternate}
+@keyframes mp{from{box-shadow:0 0 8px rgba(255,68,68,0.3)}to{box-shadow:0 0 28px rgba(255,68,68,0.65)}}
+.miclbl{font-size:9px;letter-spacing:2px;color:rgba(0,212,255,0.32);margin-top:5px}
+.toast{position:fixed;top:66px;left:50%;transform:translateX(-50%);background:rgba(0,15,40,0.97);border:1px solid var(--c);border-radius:6px;padding:9px 20px;font-size:11px;letter-spacing:1px;z-index:9999;white-space:nowrap;animation:tin .22s ease;pointer-events:none}
+@keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+</style>
+</head>
+<body>
+<div class="glw"></div>
+
+<!-- SETUP -->
+<div id="setup" class="scr on">
+<div class="sw">
+  <div class="logo">
+    <h1>J.A.R.V.I.S</h1>
+    <p>JUST A RATHER VERY INTELLIGENT SYSTEM</p>
+  </div>
+  <div class="card">
+    <div class="ct"><span class="dot"></span>HUGGING FACE AI ENGINE</div>
+    <div class="fl2">
+      <label>HUGGING FACE TOKEN</label>
+      <input type="password" id="gkey" placeholder="hf_...">
+      <div class="hint">Free at <a href="https://huggingface.co" target="_blank">huggingface.co</a> → Settings → Access Tokens → New Token</div>
+    </div>
+  </div>
+  <button class="btn" onclick="launch()">⚡ INITIALISE JARVIS</button>
+  <button class="btn sm" onclick="demo()">DEMO MODE — NO KEY NEEDED</button>
+  <button id="installbtn" class="btn" style="display:none;background:linear-gradient(135deg,rgba(0,255,100,0.15),rgba(0,200,80,0.08));border-color:#00ff88;color:#00ff88;margin-top:0" onclick="installApp()">📲 INSTALL AS APP</button>
+<div class="install-tip">
+    <strong>📱 INSTALL AS APP ON ANDROID</strong>
+    Open in Chrome → tap <strong>three dots ⋮</strong> → <strong>Add to Home screen</strong>
+  </div>
+</div>
+</div>
+
+<!-- MAIN -->
+<div id="main" class="scr">
+  <div class="topbar">
+    <div class="tbtitle">J.A.R.V.I.S</div>
+    <button class="ibtn" onclick="goSetup()">⚙</button>
+  </div>
+
+  <a class="spbar" href="spotify://">
+    <div class="spico">🎵</div>
+    <div class="spinfo">
+      <div class="spname">Open Spotify</div>
+      <div class="spsub">Tap to launch Spotify app</div>
+    </div>
+    <div style="color:rgba(0,255,136,0.4);font-size:18px">›</div>
+  </a>
+
+  <div class="qs">
+    <button class="qb" onclick="q('What time is it?')">🕐 Time</button>
+    <button class="qb" onclick="q('What is the weather like today?')">🌤 Weather</button>
+    <button class="qb" onclick="q('Tell me a joke')">😄 Joke</button>
+    <button class="qb" onclick="q('Give me a fun fact')">🧠 Fun Fact</button>
+    <button class="qb" onclick="q('What can you do?')">❓ Help</button>
+    <button class="qb" onclick="q('Tell me something about Marvel')">🦸 Marvel</button>
+    <button class="qb" onclick="q('Motivate me')">💪 Motivate</button>
+  </div>
+
+  <div class="chat-area" id="ca"></div>
+
+  <div class="bbar">
+    <div class="irow">
+      <textarea id="ti" rows="1" placeholder="Ask Jarvis anything..." onkeydown="ok(event)" oninput="rs(this)"></textarea>
+      <button class="sndbtn" onclick="send()">➤</button>
+    </div>
+    <div class="microw">
+      <div class="micwrap">
+        <button class="micbtn" id="mic" onclick="toggleMic()">🎙</button>
+        <div class="miclbl" id="miclbl">TAP TO SPEAK</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const S = { key:'', demo:false, history:[], listening:false, rec:null };
+
+function launch(){
+  S.key = document.getElementById('gkey').value.trim();
+  if(!S.key){ toast('⚠ Please enter your Groq API key'); return; }
+  localStorage.setItem('jv_hf', S.key);
+  start();
+}
+function demo(){ S.demo=true; S.key='demo'; start(); }
+function goSetup(){
+  document.getElementById('main').classList.remove('on');
+  document.getElementById('setup').classList.add('on');
+}
+function start(){
+  document.getElementById('setup').classList.remove('on');
+  document.getElementById('main').classList.add('on');
+  addMsg('j', "Good day, Harris. I am J.A.R.V.I.S — online and ready. How can I assist you?");
+  initMic();
+}
+
+function addMsg(role, text){
+  const ca = document.getElementById('ca');
+  const d = document.createElement('div');
+  d.className = `msg ${role}`;
+  d.innerHTML = `<div class="mlb">${role==='j'?'J.A.R.V.I.S':'YOU'}</div><div class="bbl">${text}</div>`;
+  ca.appendChild(d);
+  ca.scrollTop = ca.scrollHeight;
+}
+function showTyp(){
+  const ca = document.getElementById('ca');
+  const d = document.createElement('div');
+  d.id='typ'; d.className='msg j';
+  d.innerHTML=`<div class="mlb">J.A.R.V.I.S</div><div class="bbl"><div class="typ"><span></span><span></span><span></span></div></div>`;
+  ca.appendChild(d); ca.scrollTop=ca.scrollHeight;
+}
+function hideTyp(){ const t=document.getElementById('typ'); if(t)t.remove(); }
+
+async function send(){
+  const el=document.getElementById('ti');
+  const txt=el.value.trim(); if(!txt)return;
+  el.value=''; el.style.height='';
+  await proc(txt);
+}
+function ok(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} }
+function rs(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+function q(cmd){ document.getElementById('ti').value=cmd; send(); }
+
+async function proc(text){
+  addMsg('u', text); showTyp();
+  S.history.push({role:'user', content:text});
+
+  const sys = `You are J.A.R.V.I.S, Tony Stark's AI assistant. The user's name is Harris. Be intelligent, witty and slightly formal — like the real J.A.R.V.I.S from Iron Man. Keep responses concise and sharp. Current time: ${new Date().toLocaleTimeString('en-GB')}. Current date: ${new Date().toLocaleDateString('en-GB', {weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`;
+
+  let reply = '';
+  if(S.demo){
+    reply = demoR(text.toLowerCase());
+  } else {
+    try {
+      const r = await fetch('https://api-inference.huggingface.co/v1/chat/completions', {
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${S.key}`},
+        body: JSON.stringify({
+          model:'mistralai/Mistral-7B-Instruct-v0.3',
+          messages:[{role:'system',content:sys},...S.history.slice(-10)],
+          max_tokens:300, temperature:0.8
+        })
+      });
+      const d = await r.json();
+      if(d.error) throw new Error(d.error.message);
+      reply = d.choices[0].message.content;
+    } catch(e){
+      reply = `System error: ${e.message}. Please check your Groq API key in settings.`;
+    }
+  }
+
+  hideTyp();
+  S.history.push({role:'assistant', content:reply});
+  addMsg('j', reply);
+
+  // Speak the reply
+  if(window.speechSynthesis){
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(reply.replace(/[*_#-]/g,''));
+    u.rate = 0.9; u.pitch = 0.7; u.volume = 1;
+    const trySpeak = () => {
+      const voices = speechSynthesis.getVoices();
+      const pref = voices.find(v=>v.name==='Google UK English Male')
+        || voices.find(v=>v.name.includes('Daniel'))
+        || voices.find(v=>v.name.includes('Arthur'))
+        || voices.find(v=>v.name.includes('Male') && v.lang.startsWith('en'))
+        || voices.find(v=>v.lang==='en-GB')
+        || voices.find(v=>v.lang.startsWith('en'));
+      if(pref) u.voice = pref;
+      speechSynthesis.speak(u);
+    };
+    speechSynthesis.getVoices().length ? trySpeak() : (speechSynthesis.onvoiceschanged = trySpeak);
+  }
+}
+
+function demoR(t){
+  if(t.includes('time')) return `The current time is ${new Date().toLocaleTimeString('en-GB')}.`;
+  if(t.includes('date')||t.includes('today')) return `Today is ${new Date().toLocaleDateString('en-GB',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.`;
+  if(t.includes('joke')) return "Why don't scientists trust atoms? Because they make up everything. Rather like certain government intelligence briefings I've reviewed, Harris.";
+  if(t.includes('hello')||t.includes('hi')||t.includes('hey')) return "Hello, Harris. All systems operational. What can I do for you today?";
+  if(t.includes('weather')) return "I don't have live weather access in demo mode, Harris. I'd suggest checking your weather app.";
+  if(t.includes('marvel')||t.includes('avenger')) return "The Avengers Initiative was Tony Stark's brainchild — though I'd argue my contributions were equally significant. Just saying.";
+  if(t.includes('motivat')) return "You are capable of far more than you realise, Harris. Even Mr. Stark doubted himself before he built the first suit. In a cave. With scraps.";
+  if(t.includes('fun fact')) return "A group of flamingos is called a flamboyance. I thought that was worth knowing.";
+  if(t.includes('what can you do')||t.includes('help')) return "I can answer questions, tell jokes, give you the time and date, chat about Marvel, and motivate you. I'm also excellent company. Add your Groq API key in settings for full AI.";
+  if(t.includes('spotify')||t.includes('music')) return "Tap the green bar at the top of the screen to open Spotify, Harris.";
+  if(t.includes('name')) return "I am J.A.R.V.I.S — Just A Rather Very Intelligent System. At your service, Harris.";
+  return "Understood, Harris. I'm running in demo mode — add your Groq API key in settings for full AI responses. Is there anything else I can assist with?";
+}
+
+// MIC
+function initMic(){
+  const SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ document.getElementById('miclbl').textContent='NOT SUPPORTED'; return; }
+  const r = new SR(); r.continuous=false; r.interimResults=false; r.lang='en-GB';
+  r.onresult = e => { document.getElementById('ti').value=e.results[0][0].transcript; send(); };
+  r.onend = ()=>{ S.listening=false; document.getElementById('mic').classList.remove('on'); document.getElementById('miclbl').textContent='TAP TO SPEAK'; };
+  r.onerror = ()=>{ S.listening=false; document.getElementById('mic').classList.remove('on'); };
+  S.rec=r;
+}
+function toggleMic(){
+  if(!S.rec){ toast('Voice not supported on this browser'); return; }
+  if(S.listening){ S.rec.stop(); }
+  else { S.rec.start(); S.listening=true; document.getElementById('mic').classList.add('on'); document.getElementById('miclbl').textContent='LISTENING...'; }
+}
+
+function toast(msg){
+  document.querySelectorAll('.toast').forEach(t=>t.remove());
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
+}
+
+window.onload=()=>{
+  const k=localStorage.getItem('jv_hf');
+  if(k){ S.key=k; document.getElementById('gkey').value=k; start(); }
+  speechSynthesis.getVoices();
+};
+</script>
+
+<script>
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installbtn').style.display = 'block';
+});
+function installApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; document.getElementById('installbtn').style.display='none'; });
+  }
+}
+window.addEventListener('appinstalled', ()=>{ document.getElementById('installbtn').style.display='none'; });
+</script>
+</body>
+</html>
